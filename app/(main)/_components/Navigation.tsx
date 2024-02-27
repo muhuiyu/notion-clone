@@ -1,7 +1,7 @@
 "use client"
 
 import { useMutation } from "convex/react"
-import { ChevronsLeft, MenuIcon, PlusCircle, Search, Settings } from "lucide-react"
+import { ChevronsLeft, MenuIcon, Plus, PlusCircle, Search, Settings } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { ElementRef, useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
@@ -130,6 +130,7 @@ const Navigation = () => {
         </div>
         <div className="mt-4">
           <DocumentList />
+          <Item label="Add a page" icon={Plus} onClick={handleCreate} />
         </div>
         <div
           onMouseDown={handleMouseDown}
