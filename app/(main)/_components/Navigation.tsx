@@ -11,6 +11,7 @@ import { api } from "@/convex/_generated/api"
 import { cn } from "@/lib/utils"
 
 import { Popover, PopoverTrigger } from "@/components/ui/popover"
+import useSearch from "@/hooks/useSearch"
 import { PopoverContent } from "@radix-ui/react-popover"
 import DocumentList from "./DocumentList"
 import Item from "./Item"
@@ -18,6 +19,7 @@ import TrashBox from "./TrashBox"
 import UserItem from "./UserItem"
 
 const Navigation = () => {
+  const search = useSearch()
   const pathname = usePathname()
   const isMobile = useMediaQuery("(max-width: 768px)")
   const create = useMutation(api.documents.create)
@@ -127,7 +129,7 @@ const Navigation = () => {
         </div>
         <div>
           <UserItem />
-          <Item label="Search" icon={Search} isSearch onClick={() => {}} />
+          <Item label="Search" icon={Search} isSearch onClick={search.onOpen} />
           <Item label="Settings" icon={Settings} onClick={() => {}} />
           <Item label="New page" icon={PlusCircle} onClick={handleCreate} />
         </div>
