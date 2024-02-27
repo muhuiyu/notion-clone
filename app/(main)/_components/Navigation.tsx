@@ -5,6 +5,7 @@ import { ChevronsLeft, MenuIcon } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { ElementRef, useEffect, useRef, useState } from "react"
 import { useMediaQuery } from "usehooks-ts"
+import UserItem from "./UserItem"
 
 const MIN_SIDEBAR_WIDTH = 240
 const MAX_SIDEBAR_WIDTH = 480
@@ -101,7 +102,9 @@ const Navigation = () => {
       >
         <CollapseButton onClick={collapse} isMobile={isMobile} />
         <div>
-          <p>Action items</p>
+          <p>
+            <UserItem />
+          </p>7
         </div>
         <div className="mt-4">
           <p>Documents</p>
