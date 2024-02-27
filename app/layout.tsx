@@ -1,4 +1,5 @@
 import ConvexClientProvider from "@/components/providers/ConvexProvider"
+import ModalProvider from "@/components/providers/ModalProvider"
 import { ThemeProvider } from "@/components/providers/ThemeProvider"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
@@ -43,6 +44,7 @@ export default function RootLayout({
             storageKey="notion-clone-theme"
           >
             <Toaster position="bottom-center" />
+            <ModalProvider />
             {children}
           </ThemeProvider>
         </ConvexClientProvider>
