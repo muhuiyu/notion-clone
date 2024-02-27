@@ -1,18 +1,23 @@
 "use client"
 
-import { cn } from "@/lib/utils"
-import { ChevronsLeft, MenuIcon } from "lucide-react"
+import { useMutation, useQuery } from "convex/react"
+import { ChevronsLeft, MenuIcon, PlusCircle, Search, Settings } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { ElementRef, useEffect, useRef, useState } from "react"
+import { toast } from "sonner"
 import { useMediaQuery } from "usehooks-ts"
-import UserItem from "./UserItem"
 
-const MIN_SIDEBAR_WIDTH = 240
-const MAX_SIDEBAR_WIDTH = 480
+import { api } from "@/convex/_generated/api"
+import { cn } from "@/lib/utils"
+
+import Item from "./Item"
+import UserItem from "./UserItem"
 
 const Navigation = () => {
   const pathname = usePathname()
   const isMobile = useMediaQuery("(max-width: 768px)")
+  const documents = useQuery(api.documents.get)
+  const create = useMutation(api.documents.create)
 
   const isResizingRef = useRef(false)
   const sidebarRef = useRef<ElementRef<"aside">>(null)
@@ -45,11 +50,10 @@ const Navigation = () => {
 
   const handleMouseMove = (event: MouseEvent) => {
     if (!isResizingRef.current) return
-
     let newWidth = event.clientX
 
-    if (newWidth < MIN_SIDEBAR_WIDTH) newWidth = MIN_SIDEBAR_WIDTH
-    if (newWidth > MAX_SIDEBAR_WIDTH) newWidth = MAX_SIDEBAR_WIDTH
+    if (newWidth < 240) newWidth = 240
+    if (newWidth > 480) newWidth = 480
 
     if (sidebarRef.current && navbarRef.current) {
       sidebarRef.current.style.width = `${newWidth}px`
@@ -69,10 +73,9 @@ const Navigation = () => {
       setIsCollapsed(false)
       setIsResetting(true)
 
-      sidebarRef.current.style.width = isMobile ? "100%" : `${MIN_SIDEBAR_WIDTH}px`
-      navbarRef.current.style.setProperty("left", isMobile ? "100%" : `${MIN_SIDEBAR_WIDTH}px`)
-      navbarRef.current.style.setProperty("width", isMobile ? "0" : `calc(100% - ${MIN_SIDEBAR_WIDTH}px)`)
-
+      sidebarRef.current.style.width = isMobile ? "100%" : "240px"
+      navbarRef.current.style.setProperty("width", isMobile ? "0" : "calc(100% - 240px)")
+      navbarRef.current.style.setProperty("left", isMobile ? "100%" : "240px")
       setTimeout(() => setIsResetting(false), 300)
     }
   }
@@ -83,11 +86,20 @@ const Navigation = () => {
       setIsResetting(true)
 
       sidebarRef.current.style.width = "0"
-      navbarRef.current.style.setProperty("left", "0")
       navbarRef.current.style.setProperty("width", "100%")
-
+      navbarRef.current.style.setProperty("left", "0")
       setTimeout(() => setIsResetting(false), 300)
     }
+  }
+
+  const handleCreate = () => {
+    const promise = create({ title: "Untitled" })
+
+    toast.promise(promise, {
+      loading: "Creating a new note...",
+      success: "New note created!",
+      error: "Failed to create a new note.",
+    })
   }
 
   return (
@@ -100,16 +112,32 @@ const Navigation = () => {
           isMobile && "w-0"
         )}
       >
-        <CollapseButton onClick={collapse} isMobile={isMobile} />
+        <div
+          onClick={collapse}
+          role="button"
+          className={cn(
+            "h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 absolute top-3 right-2 opacity-0 group-hover/sidebar:opacity-100 transition",
+            isMobile && "opacity-100"
+          )}
+        >
+          <ChevronsLeft className="h-6 w-6" />
+        </div>
         <div>
-          <p>
-            <UserItem />
-          </p>7
+          <UserItem />
+          <Item label="Search" icon={Search} isSearch onClick={() => {}} />
+          <Item label="Settings" icon={Settings} onClick={() => {}} />
+          <Item label="New page" icon={PlusCircle} onClick={handleCreate} />
         </div>
         <div className="mt-4">
-          <p>Documents</p>
+          {documents?.map((document) => (
+            <p key={document._id}>{document.title}</p>
+          ))}
         </div>
-        <SidebarRightBorder {...{ handleMouseDown, resetWidth }} />
+        <div
+          onMouseDown={handleMouseDown}
+          onClick={resetWidth}
+          className="opacity-0 group-hover/sidebar:opacity-100 transition cursor-ew-resize absolute h-full w-1 bg-primary/10 right-0 top-0"
+        />
       </aside>
       <div
         ref={navbarRef}
@@ -126,32 +154,5 @@ const Navigation = () => {
     </>
   )
 }
-
-const CollapseButton = ({ onClick, isMobile }: { onClick: () => void; isMobile: boolean }) => (
-  <div
-    role="button"
-    onClick={onClick}
-    className={cn(
-      "h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 absolute top-3 right-2 opacity-0 group-hover/sidebar:opacity-100 transition",
-      isMobile && "opacity-100"
-    )}
-  >
-    <ChevronsLeft className="h-6 w-6" />
-  </div>
-)
-
-const SidebarRightBorder = ({
-  handleMouseDown,
-  resetWidth,
-}: {
-  handleMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-  resetWidth: () => void
-}) => (
-  <div
-    onMouseDown={handleMouseDown}
-    onClick={resetWidth}
-    className="opacity-0 group-hover/sidebar:opacity-100 transition cursor-ew-resize absolute h-full w-1 bg-primary/10 right-0 top-0"
-  />
-)
 
 export default Navigation
