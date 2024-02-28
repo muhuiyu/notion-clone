@@ -242,11 +242,11 @@ const getSearch = query({
 })
 
 const getById = query({
-  args: { id: v.id("documents") },
+  args: { documentId: v.id("documents") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
 
-    const document = await ctx.db.get(args.id)
+    const document = await ctx.db.get(args.documentId)
 
     if (!document) {
       throw new Error("Not found")
@@ -277,13 +277,13 @@ const update = mutation({
     content: v.optional(v.string()),
     coverImage: v.optional(v.string()),
     icon: v.optional(v.string()),
-    isPublished: v.optional(v.boolean()),
+    isPublished: v.optional(v.boolean())
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
 
     if (!identity) {
-      throw new Error("Not authenticated")
+      throw new Error("Unauthenticated")
     }
 
     const userId = identity.subject
@@ -305,16 +305,16 @@ const update = mutation({
     })
 
     return document
-  }
+  },
 })
 
 const removeIcon = mutation({
-  args: {id: v.id("documents")},
+  args: { id: v.id("documents") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
 
     if (!identity) {
-      throw new Error("Not authenticated")
+      throw new Error("Unauthenticated")
     }
 
     const userId = identity.subject
@@ -330,12 +330,40 @@ const removeIcon = mutation({
     }
 
     const document = await ctx.db.patch(args.id, {
-      icon: undefined,
+      icon: undefined
     })
 
     return document
   }
 })
 
-export { archive, create, getById, getSearch, getSidebar, getTrash, remove, removeIcon, restore, update }
+const removeCoverImage = mutation({
+  args: { id: v.id("documents") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
 
+    if (!identity) {
+      throw new Error("Unauthenticated")
+    }
+
+    const userId = identity.subject
+
+    const existingDocument = await ctx.db.get(args.id)
+
+    if (!existingDocument) {
+      throw new Error("Not found")
+    }
+
+    if (existingDocument.userId !== userId) {
+      throw new Error("Unauthorized")
+    }
+
+    const document = await ctx.db.patch(args.id, {
+      coverImage: undefined,
+    })
+
+    return document
+  }
+})
+
+export { archive, create, getById, getSearch, getSidebar, getTrash, remove, removeCoverImage, removeIcon, restore, update }
