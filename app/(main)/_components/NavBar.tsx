@@ -5,6 +5,7 @@ import { Id } from "@/convex/_generated/dataModel"
 import { useQuery } from "convex/react"
 import { MenuIcon } from "lucide-react"
 import { useParams } from "next/navigation"
+import Banner from "./Banner"
 import Title from "./Title"
 
 interface Props {
@@ -36,6 +37,7 @@ const NavBar = ({ isCollapsed, onResetWidth }: Props) => {
           <Title initialData={document} />
         </div>
       </nav>
+      {document.isArchived && <Banner documentId={document._id} />}
     </>
   )
 }
